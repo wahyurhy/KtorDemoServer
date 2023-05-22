@@ -2,17 +2,20 @@ package com.wahyurhy
 
 import io.ktor.application.*
 import io.ktor.features.*
+import io.ktor.html.*
 import io.ktor.http.*
+import io.ktor.http.content.*
 import io.ktor.response.*
 import io.ktor.routing.*
 import io.ktor.serialization.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
+import kotlinx.html.*
 import kotlinx.serialization.Serializable
 import java.lang.Exception
 
 fun main() {
-    embeddedServer(Netty, port = 8080) {
+    embeddedServer(Netty, port = 8080, watchPaths = listOf("classes", "resources")) {
         install(ContentNegotiation) {
             json()
         }
@@ -22,6 +25,9 @@ fun main() {
 
 fun Application.module() {
     install(Routing) {
+        static {
+            resources("static")
+        }
         get("/") {
             call.respondText("Hello World Gaes!")
         }
@@ -54,6 +60,27 @@ fun Application.module() {
         }
         get("/moved") {
             call.respondText("You have been successfully redirected!")
+        }
+        get("/welcome") {
+            val name = call.request.queryParameters["name"]
+            call.respondHtml {
+                head {
+                    title { +"Custom Title" }
+                }
+                body {
+                    if (name.isNullOrEmpty()) {
+                        h3 { +"Welcome bro!" }
+                    } else {
+                        h3 { +"Welcome $name!" }
+                    }
+
+                    p { +"Current directory is: ${System.getProperty("user.dir")}" }
+                    img(src = "kimetsu.jpg")
+                }
+            }
+        }
+        get("/antiload") {
+            call.respondText("Yoyoyo ngga perlu matiin server lagi!")
         }
     }
 }
